@@ -92,3 +92,29 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
+# Question model
+class Question(models.Model):
+    question_text = models.TextField(null=False)
+    grade = models.FloatField()
+    lesson_id = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    courses = models.ManyToManyField(Course)
+
+    def is_get_score(self, selected_ids):
+        all_answers = self.choice_set.filter(is_correct=True).count()
+        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+        if all_answers == selected_correct:
+            return True
+        else:
+            return False
+
+# Choice model
+class Choice(models.Model):
+    questions = models.ManyToManyField(Question)
+    choice_content = models.TextField(null=False)
+    correct = models.BooleanField()
+
+
+# Submission model
+class Submission(models.Model):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
